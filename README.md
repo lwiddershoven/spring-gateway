@@ -15,3 +15,28 @@ The gateways are going to have both a Java and a Kotlin implementation, because 
 ## Spring
 
 Spring apps are going to be generated with start.spring.io on the now current version.
+
+## Run
+
+First build the infrastructure components:
+- spring-discovery: mvn spring-boot:build-image
+
+Then run the infrastructure docker-compose to start:
+- Hachicorp consul for proper properties management (spring cloud config would be another option)
+- Hachicorp vault for proper secrets management (there is no real alternative here that is even remotely comparable)
+- Your newly build  service discovery server (aka eureka-server) which we named spring-discovery
+
+We don't have logging, metrics or tracing services enabled as 9 docker containers is already quite much, in particular for Windows laptops with a multitude of virus scanners and crapware (like pause popups) installed.
+
+Then run the apps:
+- partner-service
+- seller-service
+- supplier-service
+- spring-gateway-java
+- spring-gateway-kotlin
+- spring-graphql-java
+- spring-graphql-kotlin
+
+
+
+
