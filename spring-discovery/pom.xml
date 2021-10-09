@@ -14,7 +14,13 @@
 	<name>spring-discovery</name>
 	<description>Eureka</description>
 	<properties>
-		<java.version>17</java.version>
+		<!--		These are ignored by the kotlin plugin-->
+		<!--		<maven.compiler.source>17</maven.compiler.source>-->
+		<!--		<maven.compiler.target>17</maven.compiler.target>-->
+		<!--		This is unfortunately used and not overridable-->
+		<java.version>16</java.version>
+		<!--		Completely ignored. -->
+		<!--		<kotlin.compiler.jvmTarget>17</kotlin.compiler.jvmTarget>-->
 		<kotlin.version>1.5.31</kotlin.version>
 		<spring-cloud.version>2020.0.4</spring-cloud.version>
 	</properties>
@@ -69,6 +75,13 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+<!--				<configuration>-->
+<!--					<image>-->
+<!--						<buildpacks>-->
+<!--							<buildpack>urn:cnb:builder:paketo-buildpacks/java</buildpack>-->
+<!--						</buildpacks>-->
+<!--					</image>-->
+<!--				</configuration>-->
 			</plugin>
 			<plugin>
 				<groupId>org.jetbrains.kotlin</groupId>
