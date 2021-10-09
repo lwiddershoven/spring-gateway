@@ -1,7 +1,7 @@
 import java.util.List;
-import java.lang.ProcessBuilder;
 import java.util.concurrent.TimeUnit;
 import java.io.IOException;
+import java.io.File;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -109,7 +109,7 @@ class Builder {
 			}
 		}
 	}
-	private void createProcess(String dir, String command) {
+	private Process createProcess(String dir, String command) throws IOException {
 		var processBuilder = new ProcessBuilder();		
 		if (options.verbose()) {
 			processBuilder.inheritIO(); 
