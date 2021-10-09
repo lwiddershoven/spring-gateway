@@ -29,13 +29,13 @@ Then run the infrastructure docker-compose to start:
 We don't have logging, metrics or tracing services enabled as 9 docker containers is already quite much, in particular for Windows laptops with a multitude of virus scanners and crapware (like pause popups) installed.
 
 Then run the apps:
-- partner-service
-- seller-service
-- supplier-service
-- spring-gateway-java
-- spring-gateway-kotlin
-- spring-graphql-java
-- spring-graphql-kotlin
+- partner-service       :9010
+- seller-service        :9011
+- supplier-service      :9012
+- spring-gateway-java   :9013
+- spring-gateway-kotlin :9014
+- spring-graphql-java   :9015
+- spring-graphql-kotlin :9016
 
 
 
