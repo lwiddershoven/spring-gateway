@@ -3,6 +3,7 @@ import java.lang.ProcessBuilder;
 import java.util.concurrent.TimeUnit;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Map;
 
 // Look Ma, Written without IDE !
 
@@ -16,13 +17,12 @@ class BuildAll {
 			"spring-discovery", "partner-service"
 			);
 		
-		var verbose = Arrays.stream(args).anyMatch("-v"::equals);
-		if (Arrays.stream(args).anyMatch("-h"::equals)) {
-			System.out.println("Options:\n-v verbose\n-h Help\n--dont-clean do not clean when running mvn verify");
-		}
-		var clean = !Arrays.stream(args).anyMatch("--dont-clean"::equals);
+	
+		var opts = Options.parse(args);
+		var builder = new Builder(opts);
 
-		var builder = new Builder(verbose, clean);
+		System.out.println("Current options: " + opts);
+		
 		dirs.stream()
 		    .map(builder::mavenVerify)
 		    .map(builder::buildImage)
@@ -31,18 +31,46 @@ class BuildAll {
 		System.out.println("Finished");
 	}
 }
-class Builder {
-	private final boolean verbose;
-	private final boolean clean;
-	private static final String MAVEN_CLEAN_VERIFY="mvn clean verify";
-	private static final String MAVEN_VERIFY="mvn clean verify";
-	private static final String MAVEN_BUILD_IMAGE="mvn spring-boot:build-image";
 
-	Builder(boolean verbose, boolean clean) { this.verbose = verbose; this.clean = clean; }
+record Options(boolean verbose, boolean quitOnError, boolean clean) {
+	private static final Map<String, String> opts = Map.of(
+		"-h", "Help",
+		"-v", "Verbose - print maven output",
+		"-q", "Quit on error - Stop the build when something fails",
+		"--dont-clean", "Run maven without clean"
+	);
+
+	static Options parse(String ... args) {
+		if (Arrays.stream(args).anyMatch("-h"::equals)) {
+			System.out.println("Options:");
+			opts.keySet().stream()
+				.forEach( (k) -> System.out.println("%s : %s".formatted(k, opts.get(k))));
+		}
+
+		var _verbose = Arrays.stream(args).anyMatch("-v"::equals);
+		var _quitOnError = Arrays.stream(args).anyMatch("-q"::equals);
+		var _clean = !Arrays.stream(args).anyMatch("--dont-clean"::equals);
+
+		return new Options(_verbose,  _quitOnError, _clean);
+	}
+}
+
+
+class Builder {
+	private Options options;
+	private static final String MAVEN_CLEAN_VERIFY="mvn clean verify";
+	private static final String MAVEN_VERIFY="mvn verify";
+	private static final String MAVEN_BUILD_IMAGE="mvn spring-boot:build-image";
+	private static File NULL_FILE = new File(
+          (System.getProperty("os.name")
+                     .startsWith("Windows") ? "NUL" : "/dev/null")
+   );
+
+	Builder(Options options) {this.options = options; }
 
 	String mavenVerify(String dir)  {
 		try {
-			if (clean) {
+			if (options.clean()) {
 				runProcess(dir, MAVEN_CLEAN_VERIFY);
 			} else {
 				runProcess(dir, MAVEN_VERIFY);
@@ -63,24 +91,33 @@ class Builder {
 	}
 
 	private void runProcess(String dir, String command) throws IOException, InterruptedException {
-		var processBuilder = new ProcessBuilder();
-		if (verbose) {
-			processBuilder.inheritIO(); 
-		}
-		// processBuilder.command("zsh", "-c", "cd " + dir + " && " command);
-		System.out.println("cmd is " + "cd %s  %s".formatted(dir, command));
-		processBuilder.command("zsh", "-c", "cd %s && %s".formatted(dir, command));
-		System.out.println("Executing %s in %s".formatted(command, dir));
-		var process = processBuilder.start();
+		var process = createProcess(dir, command);
+
 		if (process.waitFor(5, TimeUnit.MINUTES)) {
 			if (process.exitValue() == 0) {
 				System.out.println("Process succeeded");
 			} else {
+				if (options.quitOnError()) {
+						System.exit(1);
+				} 
 				System.out.println("Process failed with exit code " + process.exitValue() + ". Try again with the -v option.");
 			}
 		} else {
-			System.out.println("The process did not finish in the given time (5 minutes)" + ". Try again with the -v option.");
+			System.out.println("The process '" + command + "' in '" + dir + "' did not finish in the given time (5 minutes)" + ". Try again with the -v option.");
+			if (options.quitOnError()) {
+				System.exit(1);
+			}
 		}
 	}
-
+	private void createProcess(String dir, String command) {
+		var processBuilder = new ProcessBuilder();		
+		if (options.verbose()) {
+			processBuilder.inheritIO(); 
+		} else {
+			processBuilder.redirectErrorStream(true);
+			processBuilder.redirectOutput(NULL_FILE);
+		}
+		processBuilder.command("zsh", "-c", "cd %s && %s".formatted(dir, command));
+		return processBuilder.start();
+	}
 }
