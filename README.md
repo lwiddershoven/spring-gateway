@@ -14,12 +14,20 @@ The gateways are going to have both a Java and a Kotlin implementation, because 
 
 ## Spring
 
-Spring apps are going to be generated with start.spring.io on the now current version.
+Spring apps are going to be generated with start.spring.io on the now current version. We use Java 17 for the  java apps, and 16 for Kotlin as the maven plugin cannot handle Java 17 in the pom.
+
+## Arch
+
+Images are unfortunately not build using mvn spring-boot:build-image. I had hoped that would work but the applications have the weirdest startup problems when running in Docker. They compile and build fine; it's just that they cannot parse classes or files correctly. Weird.
+
+So, instead I'm using my own simple Dockerfile with _Amazon Corretto_ which has as an X86 build for you, and an ARM64 build for my Apple M1 Mac Mini.
+
+If you think this was a painfull discovery you would be right. Automated magic - like x86 interpretation on the m1 mac - is awesome if it works but hell to find out what is wrong when it does not work for you.
 
 ## Run
 
 First build the infrastructure components:
-- spring-discovery: mvn spring-boot:build-image
+- spring-discovery: mvm clean verify ; docker build -t leonw/springdiscovery .
 
 Then run the infrastructure docker-compose to start: 
 - Hachicorp consul for proper properties management (spring cloud config would be another option) (http://localhost:8500)
