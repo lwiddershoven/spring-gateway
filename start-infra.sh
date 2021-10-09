@@ -15,4 +15,4 @@ echo "Starting secret management app 'vault' in development mode"
 docker run -d --cap-add=IPC_LOCK -p 8200:8200 -e 'VAULT_DEV_ROOT_TOKEN_ID=topsecret' --name=vault vault
 
 echo "Starting service discovery service"
-docker run -d -p 8761:8761 library/spring-discovery:0.0.1-SNAPSHOT
+docker run -d  -e spring.cloud.consul.host=host.docker.internal -e spring.cloud.vault.uri=http://host.docker.internal:8200 -p 8761:8761 leonw/springdiscovery
