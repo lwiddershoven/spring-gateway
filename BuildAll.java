@@ -60,7 +60,10 @@ class Builder {
 	private Options options;
 	private static final String MAVEN_CLEAN_VERIFY="mvn clean verify";
 	private static final String MAVEN_VERIFY="mvn verify";
-	private static final String MAVEN_BUILD_IMAGE="mvn spring-boot:build-image";
+	// build-image does not build images that work correctly on Apple M1 (ARM64)
+	// private static final String MAVEN_BUILD_IMAGE="mvn spring-boot:build-image";
+	private static final String DOCKER_BUILD_TEMPLATE="docker build -t leonw/%s .";
+	
 	private static File NULL_FILE = new File(
           (System.getProperty("os.name")
                      .startsWith("Windows") ? "NUL" : "/dev/null")
@@ -83,7 +86,7 @@ class Builder {
 
 	String buildImage(String dir) {
 		try {
-			runProcess(dir, MAVEN_BUILD_IMAGE);
+			runProcess(dir, DOCKER_BUILD_TEMPLATE.formatted(dir));
 		} catch (IOException|InterruptedException e) {
 			throw new RuntimeException(e);
 		}
