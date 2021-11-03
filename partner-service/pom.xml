@@ -17,7 +17,24 @@
 		<!--		<maven.compiler.source>17</maven.compiler.source>-->
 		<!--		<maven.compiler.target>17</maven.compiler.target>-->
 		<!--		This is unfortunately used and not overridable-->
-		<java.version>16</java.version>
+
+		<!-- Important lesson: mvn spring-boot:build-image with a non-LTS java version
+		     will automatically break if the non-LTS version is out of support
+
+		     This would be great, except....
+
+		     Kotlin is lagging behind in JVM version support and does not support the LTS version
+		     of java.
+
+		     So, the lesson is one of:
+		     - Do not use newer non-LTS versions of Java with Kotlin.
+		     - Do not use mvn spring-boot:build-image because it is not a reproducible build.
+
+		     And honestly, while I do understand, that last part scares me more than using a non-supported
+		     java version.
+		 -->
+
+		<java.version>11</java.version>
 		<!--		Completely ignored. -->
 		<!--		<kotlin.compiler.jvmTarget>17</kotlin.compiler.jvmTarget>-->
 		<kotlin.version>1.5.31</kotlin.version>
